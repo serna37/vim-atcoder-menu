@@ -1,10 +1,10 @@
 aug ac_dark_color
     au!
     au ColorScheme * hi AtCoderDarkRed ctermfg=204
-    au ColorScheme * hi AtCoderarkBlue ctermfg=39
+    au ColorScheme * hi AtCoderDarkBlue ctermfg=39
 aug END
-au ColorScheme * hi AtCoderarkRed ctermfg=204
-au ColorScheme * hi AtCoderarkBlue ctermfg=39
+hi AtCoderDarkRed ctermfg=204
+hi AtCoderDarkBlue ctermfg=39
 
 " ############################################################################
 " ###### util functions depends on acc commnad
@@ -14,9 +14,18 @@ fu! s:acc_getcontest() abort
     retu execute('pwd')[1:]->split('/')[-1]
 endf
 
-" get task-id from "current program file" created by "acc add"
+" get task-id from "current window program file" created by "acc add"
 fu! s:acc_gettask() abort
-    retu expand('%')->split('/')[0]
+    let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
+    let target_bufname = 'a/ini_val_is_a'
+    for wid in range(1, winnr('$'))
+        let bufname = bufname(winbufnr(wid))
+        if stridx(bufname, pg_file) != -1
+            let target_bufname = bufname
+            break
+        endif
+    endfor
+    retu split(target_bufname, '/')[0]
 endf
 
 " get task-id list from "current work_dir" create by "acc add"
@@ -30,45 +39,48 @@ endf
 " ###########################################################################
 " sound for Mac
 fu! s:bell_hero() abort
-    cal job_start(["/bin/zsh","-c","afplay /System/Library/Sounds/Hero.aiff"])
+    if executable('afplay') && glob('/System/Library/Sounds/Hero.aiff') != -1
+        cal job_start(["/bin/zsh","-c","afplay /System/Library/Sounds/Hero.aiff"])
+    endif
 endf
 fu! s:bell_submarine() abort
-    cal job_start(["/bin/zsh","-c","afplay /System/Library/Sounds/Submarine.aiff"])
+    if executable('afplay') && glob('/System/Library/Sounds/Hero.aiff') != -1
+        cal job_start(["/bin/zsh","-c","afplay /System/Library/Sounds/Submarine.aiff"])
+    endif
 endf
 
 " ac commands result window
 let s:ac_winid = -1
-let s:ac_win_bufnr = -1
 fu! s:open_ac_win() abort
     let current_win = winnr()
     let s:ac_winid = bufwinid('AtCoder')
     if s:ac_winid == -1
         sil! exe 'vertical topleft new AtCoder'
-        setl buftype=nofile bufhidden=wipe nobuflisted modifiable
+        let s:ac_winid = bufwinid('AtCoder')
+        setl buftype=nofile bufhidden=hide nobuflisted modifiable
         setl nonumber norelativenumber nocursorline nocursorcolumn signcolumn=no
         " for test
         setl filetype=log
-        let s:ac_win_bufnr = bufnr()
-        cal matchadd('DarkBlue', 'SUCCESS')
+        cal matchadd('AtCoderDarkBlue', 'SUCCESS')
+        exe (current_win+1).'wincmd w'
     else
-        cal win_gotoid(s:ac_winid)
-        exe '%d'
+        cal deletebufline(winbufnr(s:ac_winid), 1, '$')
     endif
-    exe current_win.'wincmd w'
 endf
 
 fu! s:async_ac_win(cmd) abort
     cal s:open_ac_win()
-    cal job_start(a:cmd,  #{callback: 's:async_ac_win_handler'})
+    cal job_start(["/bin/zsh","-c",a:cmd], #{out_cb: function('atcoder#async_ac_win_handler')})
 endf
-fu! s:async_ac_win_handler(ch, msg) abort
-    cal appendbufline(s:ac_winid, '$', a:msg)
+fu! atcoder#async_ac_win_handler(ch, msg) abort
+    cal appendbufline(winbufnr(s:ac_winid), '$', a:msg)
 endf
 
 " ############################################################################
 " ###### AtCoder Main Menu
 " ###########################################################################
 let s:ac_menu_pid = 0
+let s:pmenu_default = []
 let s:ac_menu_list = [
             \ '[⚙️  Test]         Test PG      | oj command',
             \ '[⚡️ CheckOut]     Choose Task  | cd dir & open PG',
@@ -76,8 +88,13 @@ let s:ac_menu_list = [
             \ '[☕️ Timer Stop]   Take a break | stop the timer',
             \ '[🚀 Submmit]      Submmit PG   | acc submit',
             \ ]
-fu! s:ac_menu() abort
-    cal popup_menu(s:ac_menu_list, #{title: ' AtCoder ', border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_action'})
+fu! atcoder#ac_menu() abort
+    cal popup_close(s:ac_menu_pid)
+    let s:ac_menu_pid = popup_menu(s:ac_menu_list, #{title: ' AtCoder ', border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_action'})
+    cal setwinvar(s:ac_menu_pid, '&wincolor', 'AtCoderDarkBlue')
+    cal matchadd('AtCoderDarkRed', '\[.*\]', 100, -1, #{window: s:ac_menu_pid})
+    let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
+    hi PmenuSel ctermbg=232 ctermfg=114
 endf
 fu! s:ac_action(_, idx) abort
     if a:idx == 1
@@ -91,9 +108,9 @@ fu! s:ac_action(_, idx) abort
     elseif a:idx == 5
         cal s:ac_submit()
     endif
+    exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
-
 
 " ############################################################################
 " ###### AtCoder TEST
@@ -101,12 +118,12 @@ endf
 let s:ac_test_timer_id = 0
 fu! s:ac_test() abort
     let test_cmd = get(g:, 'ac_vim_test_cmd', 'g++ -std=c++20 main.cpp && oj t')
-    let cmd = 'cd '.s:acc_gettask().'&&'.test_cmd
+    let cmd = 'cd '.s:acc_gettask().'/ && '.test_cmd
     cal s:async_ac_win(cmd)
     let s:ac_test_timer_id = timer_start(200, {tid -> s:ac_test_timer(tid)}, #{repeat: 10})
 endf
 fu! s:ac_test_timer(tid) abort
-    for i in getbufline(s:ac_win_bufnr, 0, line("$"))
+    for i in getbufline(winbufnr(s:ac_winid), 0, line("$"))
         if match(i, "test success") != -1
             cal s:bell_hero()
             cal timer_stop(a:tid)
@@ -139,9 +156,14 @@ endf
 fu! s:ac_chkout(_, idx) abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     exe 'e '.s:tasks[a:idx-1].'/'.pg_file
-    cal s:bell_hero()
     " TODO 問題をダウンロードしてきて、vim上で読みたい
     " XXX pythonでの問題の取得
+
+
+
+
+
+
     retu 0
 endf
 
@@ -161,7 +183,7 @@ fu! s:atcoder_timer_start() abort
     cal popup_close(s:actimer_pid)
     let s:actimer_pid = popup_create(s:actimer_view, #{
         \ zindex: 99, mapping: 0, scrollbar: 1,
-        \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], borderhighlight: ['DarkBlue'],
+        \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], borderhighlight: ['AtCoderDarkBlue'],
         \ line: &lines-10, col: 10,
         \ })
     let s:actimer_tid = timer_start(1000, {tid -> s:atcoder_timer(tid)}, #{repeat: -1})
@@ -176,27 +198,81 @@ endf
 " timer settings
 fu! s:atcoder_timer(tid) abort
     let s:actimer_sec += 1
-    " bell at 1min, 3min, 8min, 18min, 40min
-    if s:actimer_sec==60 || s:actimer_sec==180 || s:actimer_sec==480 || s:actimer_sec==1080 || s:actimer_sec==2400
-        cal s:bell_submarine()
-    endif
-    " bell every 20min
-    if s:actimer_sec>2400 && s:actimer_sec%1200==0
-        cal s:bell_submarine()
-    endif
+    " bell at
+    let bell = get(g:, 'ac_vim_bell_times_at', [1, 3, 8, 18, 40])
+    for m in bell
+        if s:actimer_sec == m*60
+            cal s:bell_submarine()
+        endif
+    endfor
+    " bell every
+    let interval = get(g:, 'ac_vim_bell_times_interval', [20])
+    for m in interval
+        if s:actimer_sec == m*60
+            cal s:bell_submarine()
+        endif
+    endfor
     " LPAD 0埋め
     let minutes = s:actimer_sec / 60
     let minutes = minutes < 10 ? '00'.minutes : '0'.minutes
     let seconds = s:actimer_sec % 60
-    if seconds < 10
-        let seconds = '0'.seconds
-    endif
+    let seconds = seconds < 10 ? '0'.seconds : seconds
     " view
     let s:actimer_view = [minutes.':'.seconds]
     cal setbufline(winbufnr(s:actimer_pid), 1, s:actimer_view)
     " over 90min
-    if s:actimer_sec > 5400
-        cal matchadd('DarkRed', '[^ ]', 16, -1, #{window: s:actimer_pid})
+    let redzone = get(g:, 'ac_vim_bell_times_redzone', 90)
+    if s:actimer_sec > redzone*60
+        cal matchadd('AtCoderDarkRed', '[^ ]', 16, -1, #{window: s:actimer_pid})
     endif
+endf
+
+" timer start on vim start
+fu! atcoder#timer() abort
+    cal s:atcoder_timer_start()
+endf
+
+" ############################################################################
+" ###### AtCoder Logo
+" ###########################################################################
+let s:ac_logo = [
+    \'                                                                           .',
+    \'                                                                         .dN.',
+    \'                                                                      ..d@M#J#(,',
+    \'                                                                   vRMPMJNd#dbMG#(F',
+    \'                                                         (O.  U6..  WJNdPMJFMdFdb#`  .JU` .Zo',
+    \'                                                      .. +NM=(TB5.-^.BMDNdJbEddMd ,n.?T@3?MNm  ..',
+    \'                                                     .mg@_J~/?`.a-XNxvMMW9""TWMMF.NHa._ ?_,S.Tmg|',
+    \'                                                  .Js ,3,`..-XNHMT"= ...d"5Y"X+.. ?"8MNHHa.. (,b uZ..',
+    \'                                                 J"17"((dNMMB"^ ..JTYGJ7"^  ?"T&JT9QJ..?"TMNNHa,?727N',
+    \'                                                 .7    T"^..JT"GJv"=`             ?"4JJT9a.,?T"`  .7!',
+    \'                                                         M~JY"!     ....<.Zj+,(...     .7Ta_M',
+    \'                                             .JWkkWa,    d-F     .+;.ge.ga&.aa,ua+.g,     ,}#    .(Wkkkn,',
+    \'                                            .W9AaeVY=-.. J;b   .XH3dHHtdHHDJHHH(HHH(WH,   J(F  ..?T4agdTH-',
+    \'                                             6XkkkH=!    ,]d  .HHtdHHH.HHHbJHHH[WHHH(HHL  k.]    _7HkkkHJ:',
+    \'                                             JqkP?H_      N(; TYY?YYY9(YYYD?YYYt7YYY\YY9 .Fd!     .WPjqqh',
+    \'                                             .mmmH,``      d/b WHHJHH@NJHHH@dHHHFdHHHtHH#`.1#       `(dqqq]',
+    \'                                            ,gmmgghJQQVb  ,bq.,YY%7YYY(YYY$?YYY^TYYY(YY^ K.]  JUQmAJmmmmg%',
+    \'                                             ggggggggh,R   H,]  T#mTNNbWNN#dNN#(NN@(N@! .t#   d(Jgggggggg:',
+    \'                                            .@@@@@#"_JK4,  ,bX.   ?i,1g,jge.g2+g2i,?`   K.t  .ZW&,7W@@@@@h.',
+    \'                                        `..H@@@@@P   7 .H`  W/b        .^."?^(!        -1#   W, ?   T@@@@@Ma,`',
+    \'                                        dH@HHHM"       U\   .N,L        ..            .$d    .B`     ."MHHH@HN.',
+    \'                                   ....JMHHHHH@              ,N(p      .dH.d"77h.    .$J\              dHHHHHMU....',
+    \'                                  ` WHH#,7MHHM{               ,N,h     d^.W,        .^J^               .MHHM"_d#HN.',
+    \'                                   ,jH#Mo .MMW:                .W,4,  J\   Ta.-Y` .J(#                 .HMM- .M#MF!',
+    \'                                     .MN/ d@?M+                  7e(h.           .3.F                  .MDd# (MML`',
+    \'                                     .M4%  ?H, 7a,                .S,7a.       .Y.#^                .,"`.d=  ,PWe',
+    \'                                    .! ?     dN .N,                 (N,7a.   .Y(d=                 .d! d@     4 .!',
+    \'                                             .W` .!                   ?H,?GJ".d"                    ^  B',
+    \'                                                                        (SJ.#=',
+    \'                                                       J             ....            .M:',
+    \'                                                      JUb     .   .#    (\            M~',
+    \'                                                     .\.M;  .W@"` M}       .y7"m. .J"7M~ .v74e ,M7B',
+    \'                                                    .F  ,N.  J]   M]       M)  JF M_  M~ d-     M`',
+    \'                                                   .W,  .db, Jh.   Th...J\ /N..Y` ?N-.Ma.-M&.> .M-',
+    \]
+
+fu! atcoder#startify() abort
+    let g:startify_custom_header = s:ac_logo
 endf
 
