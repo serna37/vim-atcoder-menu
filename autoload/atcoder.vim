@@ -158,8 +158,12 @@ endf
 "py3file <sfile>:h:h/python3/atcoder.py
 "py3 import vim
 fu! s:scraping_get_task(url)
+    " XXX pythonでの問題の取得?
     "py3 vim.command("let task = '%s'" % ac_get_task(vim.eval('a:url')))
+
+    " TODO 問題をダウンロードしてきて、vim上で読みたい
     let task = system('curl -s '.a:url)->split('\n')
+    " TODO htmlをパースする必要
     retu task
 endf
 
@@ -172,14 +176,10 @@ endf
 fu! s:ac_chkout(_, idx) abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     exe 'e '.s:tasks[a:idx-1].'/'.pg_file
-
     cal s:open_ac_win()
     let url = s:acc_geturl()
     let task = s:scraping_get_task(url)
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
-    " TODO 問題をダウンロードしてきて、vim上で読みたい
-    " TODO htmlをパースする必要
-    " XXX pythonでの問題の取得?
     retu 0
 endf
 
