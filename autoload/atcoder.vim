@@ -159,7 +159,7 @@ endf
 "py3 import vim
 fu! s:scraping_get_task(url)
     "py3 vim.command("let task = '%s'" % ac_get_task(vim.eval('a:url')))
-    let task = system('curl -s '.a:url)
+    let task = system('curl -s '.a:url)->split('\n')
     retu task
 endf
 
@@ -178,7 +178,8 @@ fu! s:ac_chkout(_, idx) abort
     let task = s:scraping_get_task(url)
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
     " TODO 問題をダウンロードしてきて、vim上で読みたい
-    " XXX pythonでの問題の取得
+    " TODO htmlをパースする必要
+    " XXX pythonでの問題の取得?
     retu 0
 endf
 
