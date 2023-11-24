@@ -1,3 +1,6 @@
+# vim-atcoder-menu
+![acmenu_demo](./acmenu_demo.png)
+
 # Dependency
 ```sh
 # need
@@ -60,12 +63,12 @@ To set logo for [startify](https://github.com/mhinz/vim-startify).
 
 ```
 
-To start timer. (menu also includes timer)
+With start timer. (menu also includes timer)
 ```vim
 :AtCoderTimer
 ```
 
-so, you should start vim by
+So, you should start vim by
 ```sh
 vi -c "AtCoderStartify" -c "AtCoderTimer"
 ```
@@ -82,11 +85,14 @@ let g:ac_vim_pg_file = 'main.cpp'
 let g:ac_vim_test_cmd = 'g++ -std=c++20 main.cpp && oj t'
 
 " timer bell at. (default 1, 3, 8, 18, 40 min)
+" sound notification at 1, 3, 8, 18, 40 min.
 let g:ac_vim_bell_times_at = [1, 3, 8, 18, 40]
 
 " timer bell interval. (default 20 min)
+" sound notification every 20 min.
 let g:ac_vim_bell_times_interval = [20]
 
 " timer color red. (default 90 min)
+" after 90min, timer color turns red.
 let g:ac_vim_bell_times_redzone = 90
 ```

@@ -34,6 +34,13 @@ fu! s:acc_gettasks() abort
     retu system(cmd)->split('')->map({_,v->v[:0]})
 endf
 
+" get url by contest-id & task-id
+fu! s:acc_geturl() abort
+    let contest = s:acc_getcontest()
+    let task = s:acc_gettask()
+    retu 'https://atcoder.jp/contests/'.contest.'/tasks/'.contest.'_'.task
+endf
+
 " ############################################################################
 " ###### util functions
 " ###########################################################################
@@ -55,14 +62,16 @@ fu! s:open_ac_win() abort
     let current_win = winnr()
     let s:ac_winid = bufwinid('AtCoder')
     if s:ac_winid == -1
-        sil! exe 'vertical topleft new AtCoder'
+        "sil! exe 'vertical topleft new AtCoder'
+        sil! exe 'vne AtCoder'
         let s:ac_winid = bufwinid('AtCoder')
         setl buftype=nofile bufhidden=hide nobuflisted modifiable
         setl nonumber norelativenumber nocursorline nocursorcolumn signcolumn=no
         " for test
         setl filetype=log
         cal matchadd('AtCoderDarkBlue', 'SUCCESS')
-        exe (current_win+1).'wincmd w'
+        "exe (current_win+1).'wincmd w'
+        exe current_win.'wincmd w'
     else
         cal deletebufline(winbufnr(s:ac_winid), 1, '$')
     endif
@@ -137,9 +146,8 @@ endf
 " ###########################################################################
 fu! s:ac_submit() abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
-    let contest = s:acc_getcontest()
     let task = s:acc_gettask()
-    let url = 'https://atcoder.jp/contests/'.contest.'/tasks/'.contest.'_'.task
+    let url = s:acc_geturl()
     let cmd = 'cd '.task.' && oj s -y '.url.' '.pg_file
     cal s:async_ac_win(cmd)
 endf
@@ -147,6 +155,14 @@ endf
 " ############################################################################
 " ###### AtCoder Checkout Task
 " ###########################################################################
+"py3file <sfile>:h:h/python3/atcoder.py
+"py3 import vim
+fu! s:scraping_get_task(url)
+    "py3 vim.command("let task = '%s'" % ac_get_task(vim.eval('a:url')))
+    let task = system('curl -s '.a:url)
+    retu task
+endf
+
 let s:tasks = -1
 fu! s:ac_chkout_menu() abort
     let s:tasks = s:acc_gettasks()
@@ -156,14 +172,13 @@ endf
 fu! s:ac_chkout(_, idx) abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     exe 'e '.s:tasks[a:idx-1].'/'.pg_file
+
+    cal s:open_ac_win()
+    let url = s:acc_geturl()
+    let task = s:scraping_get_task(url)
+    cal appendbufline(winbufnr(s:ac_winid), '$', task)
     " TODO 問題をダウンロードしてきて、vim上で読みたい
     " XXX pythonでの問題の取得
-
-
-
-
-
-
     retu 0
 endf
 
