@@ -92,7 +92,7 @@ let s:ac_menu_pid = 0
 let s:pmenu_default = []
 let s:ac_menu_list = [
             \ '[⚙️  Test]         Test PG      | oj command',
-            \ '[⚡️ CheckOut]     Choose Task  | cd dir & open PG',
+            \ '[♻️  CheckOut]     Choose Task  | cd dir & open PG',
             \ '[⏱️ Timer Start]  100min Timer | timer with bell',
             \ '[☕️ Timer Stop]   Take a break | stop the timer',
             \ '[🚀 Submmit]      Submmit PG   | acc submit',
