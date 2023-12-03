@@ -93,6 +93,7 @@ let s:pmenu_default = []
 let s:ac_menu_list = [
             \ '[⚙️  Test]         Test PG      | oj command',
             \ '[♻️  CheckOut]     Choose Task  | cd dir & open PG',
+            \ '[🖥️ View]         View Task    | open in chrome',
             \ '[⏱️ Timer Start]  100min Timer | timer with bell',
             \ '[☕️ Timer Stop]   Take a break | stop the timer',
             \ '[🚀 Submmit]      Submmit PG   | acc submit',
@@ -111,10 +112,12 @@ fu! s:ac_action(_, idx) abort
     elseif a:idx == 2
         cal s:ac_chkout_menu()
     elseif a:idx == 3
-        cal s:atcoder_timer_start()
+        cal s:ac_prob_chrome()
     elseif a:idx == 4
-        cal s:atcoder_timer_stop()
+        cal s:atcoder_timer_start()
     elseif a:idx == 5
+        cal s:atcoder_timer_stop()
+    elseif a:idx == 6
         cal s:ac_submit()
     endif
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
@@ -156,9 +159,6 @@ endf
 " ###### AtCoder Checkout Task
 " ###########################################################################
 fu! s:scraping_get_task(url)
-    let sh = 'open -a Google\ Chrome '.a:url
-    sil! cal system(sh)
-
     let store = []
     let is_store = 0
     let start_row = '<div class="col-sm-12">'
@@ -244,6 +244,12 @@ fu! s:ac_chkout(_, idx) abort
     let task = s:scraping_get_task(url)
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
     retu 0
+endf
+
+fu! s:ac_prob_chrome() abort
+    let url = s:acc_geturl()
+    let sh = 'open -a Google\ Chrome '.url
+    sil! cal system(sh)
 endf
 
 " ############################################################################
