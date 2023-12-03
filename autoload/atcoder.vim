@@ -174,7 +174,6 @@ fu! s:scraping_get_task(url)
     let firstCookie = split(cookieFile[1], 'Set-Cookie3: ')[0]
     let secondCookie = split(cookieFile[2], 'Set-Cookie3: ')[0]
     let curlCmd = "curl -b '".firstCookie."' -b '".secondCookie."' -s ".a:url
-    echom curlCmd
     for row in system(curlCmd)->split('\n')
         " start / end
         if stridx(row, start_row) != -1
