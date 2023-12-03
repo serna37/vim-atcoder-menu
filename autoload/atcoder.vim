@@ -208,6 +208,12 @@ fu! s:scraping_get_task(url)
 
         if is_store
             let row = substitute(row, '\t', '', 'g')
+            let row = substitute(row, '<h3>', '', 'g')
+            let row = substitute(row, '</h3>', '', 'g')
+            let row = substitute(row, '<p>', '', 'g')
+            let row = substitute(row, '</p>', '', 'g')
+            let row = substitute(row, '<li>', '', 'g')
+            let row = substitute(row, '</li>', '', 'g')
             let row = substitute(row, '<var>', '', 'g')
             let row = substitute(row, '</var>', '', 'g')
             let row = substitute(row, '\\ldots', '...', 'g')
