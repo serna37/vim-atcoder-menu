@@ -173,9 +173,9 @@ fu! s:scraping_get_task(url)
     let cookieFile = readfile(glob("$HOME/Library/Application\ Support/online-judge-tools/cookie.jar"))
     let firstCookie = split(cookieFile[1], 'Set-Cookie3: ')[0]
     let secondCookie = split(cookieFile[2], 'Set-Cookie3: ')[0]
-    let curlCmd = 'curl -b '.firstCookie.' -b '.secondCookie.' -s '.a:url
+    let curlCmd = "curl -b '".firstCookie."' -b '".secondCookie."' -s ".a:url
     echom curlCmd
-    for row in system('curl -b '.firstCookie.' -b '.secondCookie.' -s '.a:url)->split('\n')
+    for row in system(curlCmd)->split('\n')
         " start / end
         if stridx(row, start_row) != -1
             let is_store = 1
