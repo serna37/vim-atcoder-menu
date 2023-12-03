@@ -155,81 +155,63 @@ endf
 " ############################################################################
 " ###### AtCoder Checkout Task
 " ###########################################################################
-py3file <sfile>:h:h/python3/at_vim_coder.py
-py3 avc = AtVimCoder()
-
-function! s:create_task_info(contest_id, task_id)
-  let task_url = s:tasks[a:contest_id][a:task_id]['task_url']
-  py3 avc.create_task_info(vim.eval('task_url'))
-  if exists('err')
-    call at_vim_coder#utils#echo_err_msg('Failed to create task info', err)
-    throw 'avc_python_err'
-  endif
-  for key in keys(task_info)
-    let s:tasks[a:contest_id][a:task_id][key] = task_info[key]
-  endfor
-  return task_info
-endfunction
-
 fu! s:scraping_get_task(url)
-    " TODO fix for python
-    let task_url = a:url
-    py3 avc.create_task_info(vim.eval('task_url'))
-    return task_info
+    let sh = 'open -a Google\ Chrome '.a:url
+    sil! cal system(sh)
 
-    "let store = []
-    "let is_store = 0
-    "let start_row = '<div class="col-sm-12">'
-    "let end_row = '<span class="lang-en">'
-    "let ignore_interval = 0
-    "let ignore_row = [
-                "\ '<div ', '</div>',
-                "\ '<section>', '</section>',
-                "\ '<span ', '</span>',
-                "\ ]
+    let store = []
+    let is_store = 0
+    let start_row = '<div class="col-sm-12">'
+    let end_row = '<span class="lang-en">'
+    let ignore_interval = 0
+    let ignore_row = [
+                \ '<div ', '</div>',
+                \ '<section>', '</section>',
+                \ '<span ', '</span>',
+                \ ]
 
-    "for row in system('curl -s '.a:url)->split('\n')
-        "" start / end
-        "if stridx(row, start_row) != -1
-            "let is_store = 1
-        "elseif stridx(row, end_row) != -1
-            "break
-        "endif
+    for row in system('curl -s '.a:url)->split('\n')
+        " start / end
+        if stridx(row, start_row) != -1
+            let is_store = 1
+        elseif stridx(row, end_row) != -1
+            break
+        endif
 
-        "" ignore interval
-        "if stridx(row, '<script>') != -1
-            "let ignore_interval = 1
-        "endif
-        "if stridx(row, '</script>') != -1
-            "let ignore_interval = 0
-            "continue
-        "endif
-        "if ignore_interval
-            "continue
-        "endif
+        " ignore interval
+        if stridx(row, '<script>') != -1
+            let ignore_interval = 1
+        endif
+        if stridx(row, '</script>') != -1
+            let ignore_interval = 0
+            continue
+        endif
+        if ignore_interval
+            continue
+        endif
 
-        "" ignore row
-        "let anymatch = 0
-        "for ig in ignore_row
-            "if stridx(row, ig) != -1
-                "let anymatch = 1
-                "break
-            "endif
-        "endfor
-        "if anymatch
-            "continue
-        "endif
+        " ignore row
+        let anymatch = 0
+        for ig in ignore_row
+            if stridx(row, ig) != -1
+                let anymatch = 1
+                break
+            endif
+        endfor
+        if anymatch
+            continue
+        endif
 
-        "if is_store
-            "let row = substitute(row, '\t', '', 'g')
-            "let row = substitute(row, '<var>', '', 'g')
-            "let row = substitute(row, '</var>', '', 'g')
-            "let row = substitute(row, '\\ldots', '...', 'g')
-            "let row = substitute(row, '\\leq', '<=', 'g')
-            "cal add(store, row)
-        "endif
-    "endfor
-    "retu store
+        if is_store
+            let row = substitute(row, '\t', '', 'g')
+            let row = substitute(row, '<var>', '', 'g')
+            let row = substitute(row, '</var>', '', 'g')
+            let row = substitute(row, '\\ldots', '...', 'g')
+            let row = substitute(row, '\\leq', '<=', 'g')
+            cal add(store, row)
+        endif
+    endfor
+    retu store
 endf
 
 let s:tasks = -1
