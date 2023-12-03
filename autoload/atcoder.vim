@@ -170,7 +170,10 @@ fu! s:scraping_get_task(url)
                 \ '<span ', '</span>',
                 \ ]
 
-    for row in system('curl -s '.a:url)->split('\n')
+    let cookieFile = readfile(glob("$HOME/Library/Application\ Support/online-judge-tools/cookie.jar"))
+    let firstCookie = split(cookieFile[1], 'Set-Cookie3: ')[0]
+    let secondCookie = split(cookieFile[2], 'Set-Cookie3: ')[0]
+    for row in system('curl -b '.firstCookie.' -b '.secondCookie.' '.a:url)->split('\n')
         " start / end
         if stridx(row, start_row) != -1
             let is_store = 1
