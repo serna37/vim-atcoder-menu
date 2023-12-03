@@ -168,6 +168,7 @@ fu! s:scraping_get_task(url)
                 \ '<div ', '</div>',
                 \ '<section>', '</section>',
                 \ '<span ', '</span>',
+                \ '<hr />',
                 \ ]
 
     let cookieFile = readfile(glob("$HOME/Library/Application\ Support/online-judge-tools/cookie.jar"))
@@ -208,14 +209,19 @@ fu! s:scraping_get_task(url)
 
         if is_store
             let row = substitute(row, '\t', '', 'g')
+            let row = substitute(row, '\r', '', 'g')
             let row = substitute(row, '<h3>', '', 'g')
             let row = substitute(row, '</h3>', '', 'g')
             let row = substitute(row, '<p>', '', 'g')
             let row = substitute(row, '</p>', '', 'g')
+            let row = substitute(row, '<ul>', '', 'g')
+            let row = substitute(row, '</ul>', '', 'g')
             let row = substitute(row, '<li>', '', 'g')
             let row = substitute(row, '</li>', '', 'g')
             let row = substitute(row, '<var>', '', 'g')
             let row = substitute(row, '</var>', '', 'g')
+            let row = substitute(row, '<pre>', '\n', 'g')
+            let row = substitute(row, '</pre>', '', 'g')
             let row = substitute(row, '\\ldots', '...', 'g')
             let row = substitute(row, '\\leq', '<=', 'g')
             cal add(store, row)
