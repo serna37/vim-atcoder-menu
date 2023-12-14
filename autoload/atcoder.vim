@@ -271,9 +271,11 @@ fu! s:scraping_get_task(url)
             let row = substitute(row, '\\}', '}', 'g')
             let row = substitute(row, '\\ ', '', 'g')
 
-            for r in split(row, '<pre>')
-                cal add(store, r)
-            endfor
+            if row != ''
+                for r in split(row, '<pre>')
+                    cal add(store, r)
+                endfor
+            endif
         endif
     endfor
     retu store
