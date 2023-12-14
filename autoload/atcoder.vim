@@ -221,7 +221,7 @@ fu! s:scraping_get_task(url)
             let row = substitute(row, '</li>', '', 'g')
             let row = substitute(row, '<var>', '', 'g')
             let row = substitute(row, '</var>', '', 'g')
-            let row = substitute(row, '<pre>', '\n', 'g')
+            "let row = substitute(row, '<pre>', '\n', 'g')
             let row = substitute(row, '</pre>', '', 'g')
             let row = substitute(row, '<code>', '', 'g')
             let row = substitute(row, '</code>', '', 'g')
@@ -270,7 +270,10 @@ fu! s:scraping_get_task(url)
             let row = substitute(row, '\\{', '{', 'g')
             let row = substitute(row, '\\}', '}', 'g')
             let row = substitute(row, '\\ ', '', 'g')
-            cal add(store, row)
+
+            for r in split(row, '<pre>')
+                cal add(store, r)
+            endfor
         endif
     endfor
     retu store
