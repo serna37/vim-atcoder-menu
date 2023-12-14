@@ -209,7 +209,7 @@ fu! s:scraping_get_task(url)
 
         if is_store
             let row = substitute(row, '\t', '', 'g')
-            let row = substitute(row, '\r', '', 'g')
+            let row = substitute(row, '\r', '\n', 'g')
 
             let row = substitute(row, '<h3>', '', 'g')
             let row = substitute(row, '</h3>', '', 'g')
@@ -227,8 +227,12 @@ fu! s:scraping_get_task(url)
             let row = substitute(row, '</code>', '', 'g')
             let row = substitute(row, '<br />', '', 'g')
 
+            let row = substitute(row, '&lt;', '<', 'g')
+            let row = substitute(row, '&leq;', '<=', 'g')
+            let row = substitute(row, '&gt;', '>', 'g')
+            let row = substitute(row, '&geq;', '≥', 'g')
+
             let row = substitute(row, '\\ldots', '...', 'g')
-            let row = substitute(row, '\\leq', '<=', 'g')
             let row = substitute(row, '\\sqrt', '√', 'g')
             let row = substitute(row, '\\pm', '±', 'g')
             let row = substitute(row, '\\div', '÷', 'g')
