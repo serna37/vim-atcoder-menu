@@ -275,6 +275,8 @@ fu! s:scraping_get_task(url)
                 for r in split(row, '<pre>')
                     cal add(store, r)
                 endfor
+            else
+                cal add(store, row)
             endif
         endif
     endfor
