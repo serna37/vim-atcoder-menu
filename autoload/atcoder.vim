@@ -271,7 +271,7 @@ fu! s:scraping_get_task(url)
             let row = substitute(row, '\\}', '}', 'g')
             let row = substitute(row, '\\ ', '', 'g')
 
-            if row != ''
+            if stridx(row, '<pre>') != -1
                 for r in split(row, '<pre>')
                     cal add(store, r)
                 endfor
