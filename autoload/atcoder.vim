@@ -113,7 +113,9 @@ fu! s:ac_action(_, idx) abort
     if a:idx == 1
         cal s:ac_test()
     elseif a:idx == 2
+        exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
         cal s:ac_chkout_menu()
+        retu 0
     elseif a:idx == 3
         cal s:ac_prob_chrome()
     elseif a:idx == 4
@@ -123,7 +125,9 @@ fu! s:ac_action(_, idx) abort
     elseif a:idx == 6
         cal s:ac_submit()
     elseif a:idx == 7
+        exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
         cal s:ac_submit_menu()
+        retu 0
     endif
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
