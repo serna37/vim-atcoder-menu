@@ -320,7 +320,36 @@ fu! s:ac_submit_multi() abort
     endfor
 
     cal popup_notification(cmds, #{line: 1})
+    let s:rwid = popup_create([], #{title: ' Multi Submit Progress ',
+                \ zindex: 50, mapping: 0, scrollbar: 0,
+                \ border: [], borderchars: s:border,
+                \ minwidth: &columns*9/12, maxwidth: &columns*9/12,
+                \ minheight: &lines/2+6, maxheight: &lines/2+6,
+                \ line: &lines/4-2, col: &columns/8+1,
+                \ })
+    cal setwinvar(s:rwid, '&wincolor', 'AtCoderDarkBlue')
+
+    let s:multi_submit_progress = []
+    for cmd in cmds
+        let job = job_start(["/bin/zsh","-c",cmd], #{close_cb: function('atcoder#async_multi_submit')})
+        let channel = job_getchannel(job)
+        cal add(s:multi_submit_progress, #{ch: channel, end: 0})
+    endfor
+
     retu 0
+endf
+
+fu! atcoder#async_multi_submit(ch, msg) abort
+    for vv in s:multi_submit_progress
+        if vv.ch == a:ch
+            let vv.end = 1
+        endif
+    endfor
+    echom 'end job channel:'.ch
+    "let win = winbufnr(s:rwid)
+    "sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
+    "cal setbufline(win, 1, s:submit_choose)
+    "cal setbufline(winbufnr(s:ac_winid), '$', a:msg)
 endf
 
 " TODO 進捗を描画-> atcoder window
