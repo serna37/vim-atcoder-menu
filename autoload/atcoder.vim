@@ -160,20 +160,37 @@ fu! s:ac_submit() abort
     cal s:async_ac_win(cmd)
 endf
 
+let s:submit_files = []
+let s:submit_choose = []
 fu! s:ac_submit_menu() abort
     " TODO チェックボックスマーク作る
     " TODO プレビューファイル作る
+    " TODO submitボタン作る
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
-    let files = s:acc_gettasks()->map({_,v->v.'/'.pg_file})
+    let s:submit_files = []
+    let s:submit_choose = []
+    for fname in s:acc_gettasks()->map({_,v->v.'/'.pg_file})
+        let buf = readfile(fname)
+        if len(buf) == 0
+            continue
+        endif
+        cal add(s:submit_files, #{chk: 1, filename: fname, preview: buf})
+        cal add(s:submit_choose, '✅ | ' . fname)
+    endfor
+
     let how2 = ' choose: [space] / all: [C-a] '
-    let wid = popup_menu(files, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
+    let wid = popup_menu(s:submit_choose, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
     cal setwinvar(wid, '&wincolor', 'AtCoderDarkBlue')
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
     hi PmenuSel ctermbg=232 ctermfg=114
 endf
 
 let s:endtasks = []
-fu! s:ac_submit_chose(_, idx) abort
+fu! s:ac_submit_chose(ctx, wid, key) abort
+    echom ctx
+    echom wid
+    echom key
+    " TODO ショートカットキー割り当て
     "let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     "exe 'e '.s:tasks[a:idx-1].'/'.pg_file
     "cal s:open_ac_win()
@@ -184,6 +201,8 @@ fu! s:ac_submit_chose(_, idx) abort
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
+
+" TODO 進捗を描画-> atcoder window
 
 " ############################################################################
 " ###### AtCoder Checkout Task
