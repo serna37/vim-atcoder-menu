@@ -197,7 +197,7 @@ fu! s:ac_submit_menu() abort
                 \ minheight: &lines/2+3, maxheight: &lines/2+3,
                 \ pos: 'topleft', line: &lines/4, col: &columns/2+1,
                 \ firstline: 1,
-                \ filter: function(s:ac_submit_preview, [0]),
+                \ filter: function('s:ac_submit_preview', [0]),
                 \ })
     cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
 
@@ -210,7 +210,7 @@ fu! s:ac_submit_menu() abort
                 \ pos: 'topleft', line: &lines/4, col: &columns/7,
                 \ firstline: 1,
                 \ callback: 's:ac_submit_multi',
-                \ filter: function(s:ac_submit_choose, [0]),
+                \ filter: function('s:ac_submit_choose', [0]),
                 \ })
     cal setwinvar(s:cwid, '&wincolor', 'AtCoderDarkBlue')
 
