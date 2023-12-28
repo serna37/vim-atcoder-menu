@@ -266,7 +266,7 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
         cal setbufline(win, 1, s:submit_choose)
     elseif a:key is# "\<C-a>"
-        for vv in range(0, len(s:submit_files))
+        for vv in range(0, len(s:submit_files) - 1)
             let s:submit_choose[vv] = s:submit_on . s:submit_files[vv].filename
             let s:submit_files[vv].chk = 1
         endfor
@@ -278,10 +278,11 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
     elseif a:key is# "\<C-n>"
         let s:cwidx += 1
         if s:cwidx >= len(s:submit_choose)
-            let s:cwidx = 0
+            let s:cwidx = len(s:submit_choose) - 1
         endif
         "cal popup_setoptions(a:wid, #{cursorline: s:cwidx + 1})
-        cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
+        cal popup_filter_menu(s:cwid, a:key)
+        "cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-p>"
         let s:cwidx -= 1
