@@ -162,10 +162,12 @@ endf
 
 fu! s:ac_submit_menu() abort
     " TODO チェックボックスマーク作る
+    " TODO プレビューファイル作る
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     let files = s:acc_gettasks()->map({_,v->v.'/'.pg_file})
     let how2 = ' choose: [space] / all: [C-a] '
-    cal popup_menu(files, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
+    let wid = popup_menu(files, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
+    cal setwinvar(wid, '&wincolor', 'AtCoderDarkBlue')
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
     hi PmenuSel ctermbg=232 ctermfg=114
 endf
@@ -314,7 +316,8 @@ endf
 let s:tasks = -1
 fu! s:ac_chkout_menu() abort
     let s:tasks = s:acc_gettasks()
-    cal popup_menu(s:tasks, #{title: 'tasks', border: [], borderchars: s:border, callback: 's:ac_chkout'})
+    let wid = popup_menu(s:tasks, #{title: ' Tasks ', border: [], borderchars: s:border, callback: 's:ac_chkout'})
+    cal setwinvar(wid, '&wincolor', 'AtCoderDarkBlue')
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
     hi PmenuSel ctermbg=232 ctermfg=114
 endf
@@ -326,7 +329,7 @@ fu! s:ac_chkout(_, idx) abort
     let url = s:acc_geturl()
     let task = s:scraping_get_task(url)
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
-    cal s:ac_prob_chrome()
+    "cal s:ac_prob_chrome()
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
