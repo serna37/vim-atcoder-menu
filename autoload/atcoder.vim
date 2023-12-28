@@ -315,7 +315,8 @@ fu! s:ac_submit_multi() abort
             continue
         endif
         let task_dir = split(vv.filename, '/')[0]
-        let cmd = 'cd '.task_dir.' && oj s -y '.url_pre.task_dir.' '.pg_file
+        "let cmd = 'cd '.task_dir.' && oj s -y '.url_pre.task_dir.' '.pg_file
+        let cmd = 'cd '.task_dir.' && echo '.url_pre.task_dir
         cal add(cmds, cmd)
     endfor
 
@@ -345,7 +346,7 @@ fu! atcoder#async_multi_submit(ch) abort
             let vv.end = 1
         endif
     endfor
-    echom 'end job channel:'.ch
+    echom 'end job channel:'.a:ch
     "let win = winbufnr(s:rwid)
     "sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
     "cal setbufline(win, 1, s:submit_choose)
