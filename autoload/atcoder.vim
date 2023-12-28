@@ -85,23 +85,25 @@ fu! atcoder#async_ac_win_handler(ch, msg) abort
     cal appendbufline(winbufnr(s:ac_winid), '$', a:msg)
 endf
 
+let s:border = ['─','│','─','│','╭','╮','╯','╰']
+
 " ############################################################################
 " ###### AtCoder Main Menu
 " ###########################################################################
 let s:ac_menu_pid = 0
 let s:pmenu_default = []
 let s:ac_menu_list = [
-            \ '[⚙️  Test]         Test PG      | build & oj -t',
-            \ '[♻️  CheckOut]     Choose Task  | cd dir & open PG',
-            \ '[🖥️ View]         View Task    | open in chrome',
-            \ '[⏱️ Timer Start]  100min Timer | timer with bell',
-            \ '[☕️ Timer Stop]   Take a break | stop the timer',
-            \ '[🚀 Submmit]      Submmit PG   | oj s -y',
-            \ '[🛩️ MultiSubmmit] MultiSubmmit | oj s -y',
+            \ '[⚙️  Test]          Test PG       | build & oj -t',
+            \ '[♻️  CheckOut]      Choose Task   | cd dir & open PG',
+            \ '[🖥️ View]          View Task     | open in chrome',
+            \ '[⏱️ Timer Start]   100min Timer  | timer with bell',
+            \ '[☕️ Timer Stop]    Take a break  | stop the timer',
+            \ '[🚀 Submmit]       Submmit PG    | oj s -y',
+            \ '[🛩️ MultiSubmmit]  Multi Submmit | oj s -y',
             \ ]
 fu! atcoder#ac_menu() abort
     cal popup_close(s:ac_menu_pid)
-    let s:ac_menu_pid = popup_menu(s:ac_menu_list, #{title: ' AtCoder ', border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_action'})
+    let s:ac_menu_pid = popup_menu(s:ac_menu_list, #{title: ' AtCoder ', border: [], borderchars: s:border, callback: 's:ac_action'})
     cal setwinvar(s:ac_menu_pid, '&wincolor', 'AtCoderDarkBlue')
     cal matchadd('AtCoderDarkRed', '\[.*\]', 100, -1, #{window: s:ac_menu_pid})
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
@@ -162,8 +164,10 @@ fu! s:ac_submit_menu() abort
     " TODO チェックボックスマーク作る
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     let files = s:acc_gettasks()->map({_,v->v.'/'.pg_file})
-    cal popup_menu(files, #{title: 'choose: [space] / all: [C-a]',
-                \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_submit_chose'})
+    let how2 = ' choose: [space] / all: [C-a] '
+    cal popup_menu(files, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
+    let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
+    hi PmenuSel ctermbg=232 ctermfg=114
 endf
 
 let s:endtasks = []
@@ -175,6 +179,7 @@ fu! s:ac_submit_chose(_, idx) abort
     "let task = s:scraping_get_task(url)
     "cal appendbufline(winbufnr(s:ac_winid), '$', task)
     "cal s:ac_prob_chrome()
+    exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
 
@@ -309,7 +314,9 @@ endf
 let s:tasks = -1
 fu! s:ac_chkout_menu() abort
     let s:tasks = s:acc_gettasks()
-    cal popup_menu(s:tasks, #{title: 'tasks', border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_chkout'})
+    cal popup_menu(s:tasks, #{title: 'tasks', border: [], borderchars: s:border, callback: 's:ac_chkout'})
+    let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
+    hi PmenuSel ctermbg=232 ctermfg=114
 endf
 
 fu! s:ac_chkout(_, idx) abort
@@ -320,6 +327,7 @@ fu! s:ac_chkout(_, idx) abort
     let task = s:scraping_get_task(url)
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
     cal s:ac_prob_chrome()
+    exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
 
@@ -345,7 +353,7 @@ fu! s:atcoder_timer_start() abort
     cal popup_close(s:actimer_pid)
     let s:actimer_pid = popup_create(s:actimer_view, #{
         \ zindex: 99, mapping: 0, scrollbar: 1,
-        \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], borderhighlight: ['AtCoderDarkBlue'],
+        \ border: [], borderchars: s:border, borderhighlight: ['AtCoderDarkBlue'],
         \ line: &lines-10, col: 10,
         \ })
     let s:actimer_tid = timer_start(1000, {tid -> s:atcoder_timer(tid)}, #{repeat: -1})
