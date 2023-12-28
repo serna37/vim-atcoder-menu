@@ -182,7 +182,7 @@ fu! s:ac_submit_menu() abort
     endfor
 
     " base window
-    let s:bwid = popup_create([], #{title: ' Multi Submit | Cursor: <C-n/p> | Choose: <Space> | All: <C-a> | Submit: <C-s> ',
+    let s:bwid = popup_create([], #{title: ' Multi Submit | All: <C-a> | Submit: <C-s> ',
                 \ zindex: 50, mapping: 0, scrollbar: 0,
                 \ border: [], borderchars: s:border,
                 \ minwidth: &columns*9/12, maxwidth: &columns*9/12,
@@ -206,7 +206,7 @@ fu! s:ac_submit_menu() abort
     cal popup_setoptions(s:pwid, #{cursorline: 1})
 
     " choose window
-    let s:cwid = popup_create(s:submit_choose, #{title: ' Solved List ',
+    let s:cwid = popup_create(s:submit_choose, #{title: ' Solved List | Cursor: j/k <C-n/p> | Choose: <Space> ',
                 \ zindex: 99, mapping: 0, scrollbar: 1,
                 \ border: [], borderchars: s:border,
                 \ minwidth: &columns/3, maxwidth: &columns/3,
@@ -240,6 +240,7 @@ fu! s:ac_submit_preview(ctx, wid, key) abort
         cal win_execute(s:pwid, 'exe '.s:prv_scrl_pos)
     elseif a:key is# "\<C-u>"
         let s:prv_scrl_pos -= 20
+        let s:prv_scrl_pos = s:prv_scrl_pos < 0 ? 0 : s:prv_scrl_pos
         cal win_execute(s:pwid, 'exe '.s:prv_scrl_pos)
     endif
     retu 1
@@ -276,14 +277,14 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
         cal setbufline(win, 1, s:submit_choose)
     elseif a:key is# "\<C-s>"
-    elseif a:key is# "\<C-n>"
+    elseif a:key is# "\<C-n>" || a:key is# "j"
         let s:cwidx += 1
         if s:cwidx >= len(s:submit_choose)
             let s:cwidx = 0
         endif
         cal popup_filter_menu(s:cwid, a:key)
         cal s:ac_submit_multi_preview_upd()
-    elseif a:key is# "\<C-p>"
+    elseif a:key is# "\<C-p>" || a:key is# "k"
         let s:cwidx -= 1
         if s:cwidx < 0
             let s:cwidx = len(s:submit_choose) - 1
@@ -295,15 +296,6 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         cal popup_setoptions(s:cwid, #{zindex: 99})
         cal feedkeys(a:key)
     endif
-
-    " TODO ショートカットキー割り当て
-    "let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
-    "exe 'e '.s:tasks[a:idx-1].'/'.pg_file
-    "cal s:open_ac_win()
-    "let url = s:acc_geturl()
-    "let task = s:scraping_get_task(url)
-    "cal appendbufline(winbufnr(s:ac_winid), '$', task)
-    "cal s:ac_prob_chrome()
     retu 1
 endf
 
