@@ -280,8 +280,8 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         if s:cwidx >= len(s:submit_choose)
             let s:cwidx = len(s:submit_choose) - 1
         endif
-        "cal popup_filter_menu(s:cwid, a:key)
-        cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
+        cal popup_filter_menu(s:cwid, a:key)
+        "cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-p>"
         let s:cwidx -= 1
