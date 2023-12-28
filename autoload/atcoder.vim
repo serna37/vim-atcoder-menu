@@ -167,6 +167,7 @@ let s:submit_on = '✅ | '
 let s:submit_off = '❌ | '
 fu! s:ac_submit_menu() abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
+    let s:cwidx = 0
     let s:submit_files = []
     let s:submit_choose = []
     for fname in s:acc_gettasks()->map({_,v->v.'/'.pg_file})
