@@ -161,7 +161,7 @@ endf
 fu! s:ac_submit_menu() abort
     " TODO チェックボックスマーク作る
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
-    let files = s:acc_gettasks()->map({_,v->v.'/'.pgfile})
+    let files = s:acc_gettasks()->map({_,v->v.'/'.pg_file})
     cal popup_menu(files, #{title: 'choose: [space] / all: [C-a]',
                 \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_submit_chose'})
 endf
