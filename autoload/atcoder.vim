@@ -304,8 +304,22 @@ endf
 
 fu! s:ac_submit_multi() abort
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
-    echom 'testtest'
-    cal popup_notification(['testetsfds'], #{line: 1})
+
+    let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
+    let contest = s:acc_getcontest()
+    let url_pre ='https://atcoder.jp/contests/'.contest.'/tasks/'.contest.'_'
+
+    let cmds = []
+    for vv in s:submit_files
+        if !vv.chk
+            continue
+        endif
+        let task_dir = split(vv.filename, '/')[0]
+        let cmd = 'cd '.task_dir.' && oj s -y '.url_pre.task_dir.' '.pg_file
+        cal add(cmds, cmd)
+    endfor
+
+    cal popup_notification(cmds, #{line: 1})
     retu 0
 endf
 
