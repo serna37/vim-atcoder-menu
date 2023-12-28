@@ -93,13 +93,13 @@ let s:border = ['─','│','─','│','╭','╮','╯','╰']
 let s:ac_menu_pid = 0
 let s:pmenu_default = []
 let s:ac_menu_list = [
-            \ '[⚙️  Test]          Test PG       | build & oj -t',
-            \ '[♻️  CheckOut]      Choose Task   | cd dir & open PG',
-            \ '[🖥️ View]          View Task     | open in chrome',
-            \ '[⏱️ Timer Start]   100min Timer  | timer with bell',
-            \ '[☕️ Timer Stop]    Take a break  | stop the timer',
-            \ '[🚀 Submmit]       Submmit PG    | oj s -y',
-            \ '[🛩️ MultiSubmmit]  Multi Submmit | oj s -y',
+            \ '[⚙️  Test]         Test PG       | build & oj -t',
+            \ '[♻️  CheckOut]     Choose Task   | cd dir & open PG',
+            \ '[🖥️ View]         View Task     | open in chrome',
+            \ '[⏱️ Timer Start]  100min Timer  | timer with bell',
+            \ '[☕️ Timer Stop]   Take a break  | stop the timer',
+            \ '[🚀 Submit]       Submit PG     | oj s -y',
+            \ '[🛩️ MultiSubmit]  Multi Submit  | oj s -y',
             \ ]
 fu! atcoder#ac_menu() abort
     cal popup_close(s:ac_menu_pid)
@@ -150,7 +150,7 @@ fu! s:ac_test_timer(tid) abort
 endf
 
 " ############################################################################
-" ###### AtCoder Submmit
+" ###### AtCoder Submit
 " ###########################################################################
 fu! s:ac_submit() abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
@@ -162,10 +162,10 @@ endf
 
 let s:submit_files = []
 let s:submit_choose = []
+let s:cwidx = 0
+let s:submit_on = '✅ | '
+let s:submit_off = '❌ | '
 fu! s:ac_submit_menu() abort
-    " TODO チェックボックスマーク作る
-    " TODO プレビューファイル作る
-    " TODO submitボタン作る
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     let s:submit_files = []
     let s:submit_choose = []
@@ -175,28 +175,111 @@ fu! s:ac_submit_menu() abort
             continue
         endif
         cal add(s:submit_files, #{chk: 1, filename: fname, preview: buf})
-        cal add(s:submit_choose, '✅ | ' . fname)
+        cal add(s:submit_choose, s:submit_on . fname)
     endfor
 
     " base window
-    let s:bwid = popup_create([], #{title: ' Multi Submmit ',
-        \ zindex: 50, mapping: 0, scrollbar: 0,
-        \ border: [], borderchars: s:border,
-        \ minwidth: &columns*9/12, maxwidth: &columns*9/12,
-        \ minheight: &lines/2+6, maxheight: &lines/2+6,
-        \ line: &lines/4-2, col: &columns/8+1,
-        \ })
+    let s:bwid = popup_create([], #{title: ' Multi Submit | Cursor: <C-n/p> | Choose: <Space> | All: <C-a> | Submit: <C-s> ',
+                \ zindex: 50, mapping: 0, scrollbar: 0,
+                \ border: [], borderchars: s:border,
+                \ minwidth: &columns*9/12, maxwidth: &columns*9/12,
+                \ minheight: &lines/2+6, maxheight: &lines/2+6,
+                \ line: &lines/4-2, col: &columns/8+1,
+                \ })
     cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
 
-    let how2 = ' choose: [space] / all: [C-a] '
-    let wid = popup_menu(s:submit_choose, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_choose'})
-    cal setwinvar(wid, '&wincolor', 'AtCoderDarkBlue')
+    " preview window
+    let s:pwid = popup_create(s:submit_files[s:cwidx].preview, #{title: ' File Preview | Scroll: <C-d/u> ',
+                \ zindex: 98, mapping: 0, scrollbar: 1,
+                \ border: [], borderchars: s:border,
+                \ minwidth: &columns/3, maxwidth: &columns/3,
+                \ minheight: &lines/2+3, maxheight: &lines/2+3,
+                \ pos: 'topleft', line: &lines/4, col: &columns/2+1,
+                \ firstline: 1,
+                \ filter: function(s:ac_submit_preview, [0]),
+                \ })
+    cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
+
+    " choose window
+    let s:cwid = popup_create(s:submit_choose, #{title: ' Solved List ',
+                \ zindex: 99, mapping: 0, scrollbar: 1,
+                \ border: [], borderchars: s:border,
+                \ minwidth: &columns/3, maxwidth: &columns/3,
+                \ minheight: &lines/2, maxheight: &lines/2,
+                \ pos: 'topleft', line: &lines/4, col: &columns/7,
+                \ firstline: 1,
+                \ callback: 's:ac_submit_multi',
+                \ filter: function(s:ac_submit_choose, [0]),
+                \ })
+    cal setwinvar(s:cwid, '&wincolor', 'AtCoderDarkBlue')
+
+    " menu highlight
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
     hi PmenuSel ctermbg=232 ctermfg=114
 endf
 
-let s:endtasks = []
+fu! s:ac_submit_preview(ctx, wid, key) abort
+    if a:key is# "\<Esc>"
+        cal popup_close(s:bwid)
+        cal popup_close(s:pwid)
+        cal popup_close(s:cwid)
+        cal feedkeys("\<C-c>")
+    elseif a:key is# "\<Space>" || a:key is# "\<C-a>" || a:key is# "\<C-s>"
+                \ || a:key is# "\<C-n>" || a:key is# "\<C-p>"
+        cal popup_setoptions(s:pwid, #{zindex: 99})
+        cal popup_setoptions(s:cwid, #{zindex: 100})
+        cal feedkeys(a:key)
+    elseif a:key is# "\<C-d>"
+        "cal win_execute(self.pwid, 'exe '.lnm)
+        cal popup_setoptions(a:wid, #{cursorline: 20})
+    elseif a:key is# "\<C-u>"
+        cal popup_setoptions(a:wid, #{cursorline: 1})
+    endif
+    retu 1
+endf
+
+fu! s:ac_submit_multi_preview_upd() abort
+    let win = winbufnr(s:pwid)
+    sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
+    cal setbufline(win, 1, s:submit_files[s:cwidx].preview)
+endf
+
 fu! s:ac_submit_choose(ctx, wid, key) abort
+    if a:key is# "\<Esc>"
+        cal popup_close(s:bwid)
+        cal popup_close(s:pwid)
+        cal popup_close(s:cwid)
+        cal feedkeys("\<C-c>")
+    elseif a:key is# "\<Space>"
+        let s:submit_files[s:cwidx].chk = !s:submit_files[s:cwidx].chk
+        let st = s:submit_files[s:cwidx].chk ? s:submit_on : s:submit_off
+        let s:submit_choose[s:submit_current_idx] = st . s:submit_files[s:cwidx].filename
+    elseif a:key is# "\<C-a>"
+        for vv in range(0, len(s:submit_files))
+            let s:submit_choose[vv] = s:submit_on . s:submit_files[vv].filename
+            let s:submit_file[vv].chk = 1
+        endfor
+    elseif a:key is# "\<C-s>"
+    elseif a:key is# "\<C-n>"
+        cal popup_filter_menu(a:wid, a:key)
+        let s:cwidx += 1
+        if s:cwidx >= len(s:submit_choose)
+            let s:cwidx = 0
+        endif
+        cal s:ac_submit_multi_preview_upd()
+    elseif a:key is# "\<C-p>"
+        cal popup_filter_menu(a:wid, a:key)
+        let s:cwidx -= 1
+        if s:cwidx < 0
+            let s:cwidx = 0
+        endif
+        cal s:ac_submit_multi_preview_upd()
+    elseif a:key is# "\<C-d>" || a:key is# "\<C-u>"
+        cal popup_setoptions(s:pwid, #{zindex: 100})
+        cal popup_setoptions(s:cwid, #{zindex: 99})
+        cal feedkeys(a:key)
+    endif
+
     echom ctx
     echom wid
     echom key
@@ -208,6 +291,10 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
     "let task = s:scraping_get_task(url)
     "cal appendbufline(winbufnr(s:ac_winid), '$', task)
     "cal s:ac_prob_chrome()
+    retu 1
+endf
+
+fu! s:ac_submit_multi(wid, idx) abort
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
 endf
