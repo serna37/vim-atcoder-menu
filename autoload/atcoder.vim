@@ -178,15 +178,25 @@ fu! s:ac_submit_menu() abort
         cal add(s:submit_choose, '✅ | ' . fname)
     endfor
 
+    " base window
+    let s:bwid = popup_create([], #{title: ' Multi Submmit ',
+        \ zindex: 50, mapping: 0, scrollbar: 0,
+        \ border: [], borderchars: s:border,
+        \ minwidth: &columns*9/12, maxwidth: &columns*9/12,
+        \ minheight: &lines/2+6, maxheight: &lines/2+6,
+        \ line: &lines/4-2, col: &columns/8+1,
+        \ })
+    cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
+
     let how2 = ' choose: [space] / all: [C-a] '
-    let wid = popup_menu(s:submit_choose, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_chose'})
+    let wid = popup_menu(s:submit_choose, #{title: how2, border: [], borderchars: s:border, callback: 's:ac_submit_choose'})
     cal setwinvar(wid, '&wincolor', 'AtCoderDarkBlue')
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
     hi PmenuSel ctermbg=232 ctermfg=114
 endf
 
 let s:endtasks = []
-fu! s:ac_submit_chose(ctx, wid, key) abort
+fu! s:ac_submit_choose(ctx, wid, key) abort
     echom ctx
     echom wid
     echom key
