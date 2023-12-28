@@ -213,7 +213,6 @@ fu! s:ac_submit_menu() abort
                 \ minheight: &lines/2, maxheight: &lines/2,
                 \ pos: 'topleft', line: &lines/4, col: &columns/7,
                 \ firstline: 1,
-                \ callback: 's:ac_submit_multi',
                 \ filter: function('s:ac_submit_choose', [0]),
                 \ })
     cal setwinvar(s:cwid, '&wincolor', 'AtCoderDarkBlue')
@@ -277,6 +276,10 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
         cal setbufline(win, 1, s:submit_choose)
     elseif a:key is# "\<C-s>"
+        cal popup_close(s:bwid)
+        cal popup_close(s:pwid)
+        cal popup_close(s:cwid)
+        cal s:ac_submit_multi()
     elseif a:key is# "\<C-n>" || a:key is# "j"
         let s:cwidx += 1
         if s:cwidx >= len(s:submit_choose)
@@ -299,8 +302,10 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
     retu 1
 endf
 
-fu! s:ac_submit_multi(wid, idx) abort
+fu! s:ac_submit_multi() abort
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
+    echom 'testtest'
+    cal popup_notification(['testetsfds'], #{line: 1})
     retu 0
 endf
 
