@@ -203,6 +203,7 @@ fu! s:ac_submit_menu() abort
                 \ })
     cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
     cal setbufvar(winbufnr(s:pwid), '&filetype', matchstr(pg_file, '[^\.]\+$'))
+    cal popup_setoptions(s:pwid, #{cursorline: 1})
 
     " choose window
     let s:cwid = popup_create(s:submit_choose, #{title: ' Solved List ',
@@ -216,6 +217,7 @@ fu! s:ac_submit_menu() abort
                 \ filter: function('s:ac_submit_choose', [0]),
                 \ })
     cal setwinvar(s:cwid, '&wincolor', 'AtCoderDarkBlue')
+    cal popup_setoptions(s:cwid, #{cursorline: 1})
 
     " menu highlight
     let s:pmenu_default = execute('hi PmenuSel')[1:]->split(' ')->filter({_,v->stridx(v, '=')!=-1})
@@ -236,10 +238,8 @@ fu! s:ac_submit_preview(ctx, wid, key) abort
     elseif a:key is# "\<C-d>"
         "cal win_execute(self.pwid, 'exe '.lnm)
         let s:prv_scrl_pos += 20
-        cal popup_setoptions(a:wid, #{cursorline: s:prv_scrl_pos})
     elseif a:key is# "\<C-u>"
         let s:prv_scrl_pos -= 20
-        cal popup_setoptions(a:wid, #{cursorline: s:prv_scrl_pos})
     endif
     retu 1
 endf
@@ -280,16 +280,14 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         if s:cwidx >= len(s:submit_choose)
             let s:cwidx = len(s:submit_choose) - 1
         endif
-        cal popup_setoptions(s:cwid, #{cursorline: s:cwidx})
         "cal popup_filter_menu(s:cwid, a:key)
-        "cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
+        cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-p>"
         let s:cwidx -= 1
         if s:cwidx < 0
             let s:cwidx = 0
         endif
-        "cal popup_setoptions(a:wid, #{cursorline: s:cwidx + 1})
         cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-d>" || a:key is# "\<C-u>"
