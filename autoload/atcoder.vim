@@ -281,9 +281,6 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         cal feedkeys(a:key)
     endif
 
-    echom ctx
-    echom wid
-    echom key
     " TODO ショートカットキー割り当て
     "let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     "exe 'e '.s:tasks[a:idx-1].'/'.pg_file
