@@ -339,7 +339,7 @@ fu! s:ac_submit_multi() abort
     retu 0
 endf
 
-fu! atcoder#async_multi_submit(ch, msg) abort
+fu! atcoder#async_multi_submit(ch) abort
     for vv in s:multi_submit_progress
         if vv.ch == a:ch
             let vv.end = 1
