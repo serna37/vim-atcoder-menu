@@ -310,13 +310,13 @@ fu! s:ac_submit_multi() abort
     let url_pre ='https://atcoder.jp/contests/'.contest.'/tasks/'.contest.'_'
 
     let cmds = []
+    let pwd_full = execute('pwd')[1:].'/'
     for vv in s:submit_files
         if !vv.chk
             continue
         endif
         let task_dir = split(vv.filename, '/')[0]
-        "let cmd = 'cd '.task_dir.' && oj s -y '.url_pre.task_dir.' '.pg_file
-        let cmd = 'cd '.task_dir.' && echo '.url_pre.task_dir
+        let cmd = 'cd '.pwd_full.task_dir.' && oj s -y '.url_pre.task_dir.' '.pg_file
         cal add(cmds, cmd)
     endfor
 
@@ -335,6 +335,7 @@ fu! s:ac_submit_multi() abort
         let job = job_start(["/bin/zsh","-c",cmd], #{close_cb: function('atcoder#async_multi_submit')})
         let channel = job_getchannel(job)
         cal add(s:multi_submit_progress, #{ch: channel, end: 0})
+        sleep 500
     endfor
 
     retu 0
