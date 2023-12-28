@@ -236,10 +236,11 @@ fu! s:ac_submit_preview(ctx, wid, key) abort
         cal popup_setoptions(s:cwid, #{zindex: 100})
         cal feedkeys(a:key)
     elseif a:key is# "\<C-d>"
-        "cal win_execute(self.pwid, 'exe '.lnm)
         let s:prv_scrl_pos += 20
+        cal win_execute(self.pwid, 'exe '.prv_scrl_pos)
     elseif a:key is# "\<C-u>"
         let s:prv_scrl_pos -= 20
+        cal win_execute(self.pwid, 'exe '.prv_scrl_pos)
     endif
     retu 1
 endf
@@ -278,17 +279,16 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
     elseif a:key is# "\<C-n>"
         let s:cwidx += 1
         if s:cwidx >= len(s:submit_choose)
-            let s:cwidx = len(s:submit_choose) - 1
+            let s:cwidx = 0
         endif
         cal popup_filter_menu(s:cwid, a:key)
-        "cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-p>"
         let s:cwidx -= 1
         if s:cwidx < 0
-            let s:cwidx = 0
+            let s:cwidx = len(s:submit_choose) - 1
         endif
-        cal win_execute(s:cwid, 'exe '.s:cwidx + 1)
+        cal popup_filter_menu(s:cwid, a:key)
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-d>" || a:key is# "\<C-u>"
         cal popup_setoptions(s:pwid, #{zindex: 100})
