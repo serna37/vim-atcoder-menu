@@ -163,11 +163,13 @@ endf
 let s:submit_files = []
 let s:submit_choose = []
 let s:cwidx = 0
+let s:prv_scrl_pos = 0
 let s:submit_on = '✅ | '
 let s:submit_off = '❌ | '
 fu! s:ac_submit_menu() abort
     let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
     let s:cwidx = 0
+    let s:prv_scrl_pos = 0
     let s:submit_files = []
     let s:submit_choose = []
     for fname in s:acc_gettasks()->map({_,v->v.'/'.pg_file})
@@ -200,6 +202,7 @@ fu! s:ac_submit_menu() abort
                 \ filter: function('s:ac_submit_preview', [0]),
                 \ })
     cal setwinvar(s:bwid, '&wincolor', 'AtCoderDarkBlue')
+    cal setbufvar(winbufnr(s:pwid), '&filetype', matchstr(pg_file, '[^\.]\+$'))
 
     " choose window
     let s:cwid = popup_create(s:submit_choose, #{title: ' Solved List ',
@@ -231,10 +234,11 @@ fu! s:ac_submit_preview(ctx, wid, key) abort
         cal popup_setoptions(s:cwid, #{zindex: 100})
         cal feedkeys(a:key)
     elseif a:key is# "\<C-d>"
-        "cal win_execute(self.pwid, 'exe '.lnm)
-        cal popup_setoptions(a:wid, #{cursorline: 20})
+        let s:prv_scrl_pos += 20
+        cal popup_setoptions(a:wid, #{cursorline: s:prv_scrl_pos})
     elseif a:key is# "\<C-u>"
-        cal popup_setoptions(a:wid, #{cursorline: 1})
+        let s:prv_scrl_pos -= 20
+        cal popup_setoptions(a:wid, #{cursorline: s:prv_scrl_pos})
     endif
     retu 1
 endf
@@ -243,6 +247,7 @@ fu! s:ac_submit_multi_preview_upd() abort
     let win = winbufnr(s:pwid)
     sil! cal deletebufline(win, 1, getbufinfo(win)[0].linecount)
     cal setbufline(win, 1, s:submit_files[s:cwidx].preview)
+    cal win_execute(s:pwid, 'exe '.1)
 endf
 
 fu! s:ac_submit_choose(ctx, wid, key) abort
@@ -254,7 +259,7 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
     elseif a:key is# "\<Space>"
         let s:submit_files[s:cwidx].chk = !s:submit_files[s:cwidx].chk
         let st = s:submit_files[s:cwidx].chk ? s:submit_on : s:submit_off
-        let s:submit_choose[s:submit_current_idx] = st . s:submit_files[s:cwidx].filename
+        let s:submit_choose[s:cwidx] = st . s:submit_files[s:cwidx].filename
     elseif a:key is# "\<C-a>"
         for vv in range(0, len(s:submit_files))
             let s:submit_choose[vv] = s:submit_on . s:submit_files[vv].filename
@@ -262,18 +267,18 @@ fu! s:ac_submit_choose(ctx, wid, key) abort
         endfor
     elseif a:key is# "\<C-s>"
     elseif a:key is# "\<C-n>"
-        cal popup_filter_menu(a:wid, a:key)
         let s:cwidx += 1
         if s:cwidx >= len(s:submit_choose)
             let s:cwidx = 0
         endif
+        cal popup_setoptions(a:wid, #{cursorline: s:cwidx + 1})
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-p>"
-        cal popup_filter_menu(a:wid, a:key)
         let s:cwidx -= 1
         if s:cwidx < 0
             let s:cwidx = 0
         endif
+        cal popup_setoptions(a:wid, #{cursorline: s:cwidx + 1})
         cal s:ac_submit_multi_preview_upd()
     elseif a:key is# "\<C-d>" || a:key is# "\<C-u>"
         cal popup_setoptions(s:pwid, #{zindex: 100})
