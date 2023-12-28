@@ -237,10 +237,10 @@ fu! s:ac_submit_preview(ctx, wid, key) abort
         cal feedkeys(a:key)
     elseif a:key is# "\<C-d>"
         let s:prv_scrl_pos += 20
-        cal win_execute(s:pwid, 'exe '.prv_scrl_pos)
+        cal win_execute(s:pwid, 'exe '.s:prv_scrl_pos)
     elseif a:key is# "\<C-u>"
         let s:prv_scrl_pos -= 20
-        cal win_execute(s:pwid, 'exe '.prv_scrl_pos)
+        cal win_execute(s:pwid, 'exe '.s:prv_scrl_pos)
     endif
     retu 1
 endf
