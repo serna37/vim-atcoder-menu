@@ -332,9 +332,10 @@ fu! s:ac_submit_multi() abort
 
     let s:multi_submit_progress = []
     for cmd in cmds
-        let job = job_start(["/bin/zsh","-c",cmd], #{close_cb: function('atcoder#async_multi_submit')})
-        let channel = job_getchannel(job)
-        cal add(s:multi_submit_progress, #{ch: channel, end: 0})
+        echom cmd
+        "let job = job_start(["/bin/zsh","-c",cmd], #{close_cb: function('atcoder#async_multi_submit')})
+        "let channel = job_getchannel(job)
+        "cal add(s:multi_submit_progress, #{ch: channel, end: 0})
         sleep 500
     endfor
 
