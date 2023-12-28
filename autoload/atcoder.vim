@@ -91,12 +91,13 @@ endf
 let s:ac_menu_pid = 0
 let s:pmenu_default = []
 let s:ac_menu_list = [
-            \ '[⚙️  Test]         Test PG      | oj command',
+            \ '[⚙️  Test]         Test PG      | build & oj -t',
             \ '[♻️  CheckOut]     Choose Task  | cd dir & open PG',
             \ '[🖥️ View]         View Task    | open in chrome',
             \ '[⏱️ Timer Start]  100min Timer | timer with bell',
             \ '[☕️ Timer Stop]   Take a break | stop the timer',
-            \ '[🚀 Submmit]      Submmit PG   | acc submit',
+            \ '[🚀 Submmit]      Submmit PG   | oj s -y',
+            \ '[🛩️ MultiSubmmit] MultiSubmmit | oj s -y',
             \ ]
 fu! atcoder#ac_menu() abort
     cal popup_close(s:ac_menu_pid)
@@ -119,6 +120,8 @@ fu! s:ac_action(_, idx) abort
         cal s:atcoder_timer_stop()
     elseif a:idx == 6
         cal s:ac_submit()
+    elseif a:idx == 7
+        cal s:ac_submit_menu()
     endif
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
@@ -153,6 +156,26 @@ fu! s:ac_submit() abort
     let url = s:acc_geturl()
     let cmd = 'cd '.task.' && oj s -y '.url.' '.pg_file
     cal s:async_ac_win(cmd)
+endf
+
+fu! s:ac_submit_menu() abort
+    " TODO チェックボックスマーク作る
+    let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
+    let files = s:acc_gettasks()->map({_,v->v.'/'.pgfile})
+    cal popup_menu(files, #{title: 'choose: [space] / all: [C-a]',
+                \ border: [], borderchars: ['─','│','─','│','╭','╮','╯','╰'], callback: 's:ac_submit_chose'})
+endf
+
+let s:endtasks = []
+fu! s:ac_submit_chose(_, idx) abort
+    "let pg_file = get(g:, 'ac_vim_pg_file', 'main.cpp')
+    "exe 'e '.s:tasks[a:idx-1].'/'.pg_file
+    "cal s:open_ac_win()
+    "let url = s:acc_geturl()
+    "let task = s:scraping_get_task(url)
+    "cal appendbufline(winbufnr(s:ac_winid), '$', task)
+    "cal s:ac_prob_chrome()
+    retu 0
 endf
 
 " ############################################################################
