@@ -229,6 +229,7 @@ endf
 
 fu! s:ac_submit_preview(ctx, wid, key) abort
     if a:key is# "\<Esc>"
+        exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
         cal popup_close(s:bwid)
         cal popup_close(s:pwid)
         cal popup_close(s:cwid)
@@ -258,6 +259,7 @@ endf
 
 fu! s:ac_submit_choose(ctx, wid, key) abort
     if a:key is# "\<Esc>"
+        exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
         cal popup_close(s:bwid)
         cal popup_close(s:pwid)
         cal popup_close(s:cwid)
