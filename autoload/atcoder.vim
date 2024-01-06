@@ -483,6 +483,7 @@ fu! s:ac_chkout(_, idx) abort
     let url = s:acc_geturl()
     let task = s:scraping_get_task(url)
     if task == ['404']
+        exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
         echom '404 not found.'
         retu 0
     endif
