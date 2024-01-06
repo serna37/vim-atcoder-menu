@@ -353,7 +353,7 @@ fu! s:scraping_get_task(url)
     let cookieFile = readfile(glob("$HOME/Library/Application\ Support/online-judge-tools/cookie.jar"))
     let firstCookie = split(cookieFile[1], 'Set-Cookie3: ')[0]
     let secondCookie = split(cookieFile[2], 'Set-Cookie3: ')[0]
-    let chk404 = "curl -o /dev/null -w '%{http_code}\n' -s '".firstCookie."' -b '".secondCookie."' -s ".a:url
+    let chk404 = "curl -o /dev/null -w '%{http_code}\n' -s -b '".firstCookie."' -b '".secondCookie."' -s ".a:url
     let res404 = system(chk404)->split('\n')[0]
     if res404 == '404'
         echom '404!!'
