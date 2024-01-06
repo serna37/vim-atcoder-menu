@@ -356,6 +356,7 @@ fu! s:scraping_get_task(url)
     let chk404 = "curl -o /dev/null -w '%{http_code}\n' -s '".firstCookie."' -b '".secondCookie."' -s ".a:url
     let res404 = system(chk404)->split('\n')[0]
     if res404 == '404'
+        echom '404!!'
         retu '404'
     endif
     let curlCmd = "curl -b '".firstCookie."' -b '".secondCookie."' -s ".a:url
