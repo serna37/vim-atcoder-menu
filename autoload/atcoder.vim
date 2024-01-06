@@ -353,6 +353,11 @@ fu! s:scraping_get_task(url)
     let cookieFile = readfile(glob("$HOME/Library/Application\ Support/online-judge-tools/cookie.jar"))
     let firstCookie = split(cookieFile[1], 'Set-Cookie3: ')[0]
     let secondCookie = split(cookieFile[2], 'Set-Cookie3: ')[0]
+    let chk404 = "curl -o /dev/null -w '%{http_code}\n' -s '".firstCookie."' -b '".secondCookie."' -s ".a:url
+    let res404 = system(chk404)->split('\n')[0]
+    if res404 == '404'
+        retu res404
+    endif
     let curlCmd = "curl -b '".firstCookie."' -b '".secondCookie."' -s ".a:url
     for row in system(curlCmd)->split('\n')
         " start / end
@@ -477,6 +482,10 @@ fu! s:ac_chkout(_, idx) abort
     cal s:open_ac_win()
     let url = s:acc_geturl()
     let task = s:scraping_get_task(url)
+    if task == '404'
+        echom '404 not found.'
+        retu 0
+    endif
     cal appendbufline(winbufnr(s:ac_winid), '$', task)
     cal s:ac_prob_chrome()
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
