@@ -530,6 +530,10 @@ endf
 " timer settings
 fu! s:atcoder_timer(tid) abort
     let s:actimer_sec += 1
+    if s:actimer_sec == get(g:, 'ac_vim_bell_times_limit', 90)
+        cal s:atcoder_timer_stop()
+        return
+    endif
     " bell at
     let bell = get(g:, 'ac_vim_bell_times_at', [1, 3, 8, 18, 40])
     for m in bell
