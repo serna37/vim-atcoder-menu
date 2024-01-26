@@ -82,7 +82,7 @@ let g:ac_vim_default_keymap = 1
 let g:ac_vim_pg_file = 'main.cpp'
 
 " test cmd (default here)
-let g:ac_vim_test_cmd = 'g++ -std=c++20 main.cpp && oj t'
+let g:ac_vim_test_cmd = 'g++ -std=c++20 -mtune=native -march=native -fconstexpr-depth=2147483647 -fconstexpr-loop-limit=2147483647 -fconstexpr-ops-limit=2147483647 main.cpp && oj t'
 
 " timer bell at. (default 1, 3, 8, 18, 40 min)
 " sound notification at 1, 3, 8, 18, 40 min.
