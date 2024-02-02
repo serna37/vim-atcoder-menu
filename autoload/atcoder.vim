@@ -166,7 +166,7 @@ fu! s:dl_test() abort
         cal system('cd '.ctask.'/ && rm -rf test')
     endif
     cal system('cd '.ctask.'/ && oj d '.g:contest_url)
-    cal popup_notification(['DL Test Data By', g:contest_url], #{line: 1})
+    cal popup_notification(['DL Test Data By', g:contest_url], #{line: &lines})
 endf
 
 " ############################################################################
