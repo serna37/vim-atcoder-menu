@@ -162,6 +162,8 @@ fu! s:ac_test_timer(tid) abort
 endf
 
 fu! s:set_url() abort
+    exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
+    cal popup_close(s:ac_menu_pid)
     let g:contest_url = input('>')
     cal popup_notification([g:contest_url], #{line: 1})
 endf
