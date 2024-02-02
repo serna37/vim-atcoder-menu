@@ -100,7 +100,7 @@ let s:ac_menu_list = [
             \ '[☕️ Timer Stop]   Take a break  | stop the timer',
             \ '[🚀 Submit]       Submit PG     | oj s -y',
             \ '[🛩️ MultiSubmit]  Multi Submit  | oj s -y',
-            \ '[⚙️  SetURL]       Set URL       | oj d',
+            \ '[⚙️  DL Test]      DL by URL     | oj d',
             \ ]
 fu! atcoder#ac_menu() abort
     cal popup_close(s:ac_menu_pid)
@@ -130,7 +130,7 @@ fu! s:ac_action(_, idx) abort
         cal s:ac_submit_menu()
         retu 0
     elseif a:idx == 8
-        cal s:set_url()
+        cal s:dl_test()
     endif
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     retu 0
@@ -143,11 +143,7 @@ let g:contest_url = ""
 let s:ac_test_timer_id = 0
 fu! s:ac_test() abort
     let test_cmd = get(g:, 'ac_vim_test_cmd', 'g++ -std=c++20 -mtune=native -march=native -fconstexpr-depth=2147483647 -fconstexpr-loop-limit=2147483647 -fconstexpr-ops-limit=2147483647 main.cpp && oj t')
-    let ctask = s:acc_gettask()
-    if glob('./'.ctask.'/test')->empty()
-        exe 'cd '.ctask.'/ && oj d '.g:contest_url
-    endif
-    let cmd = 'cd '.ctask.'/ && '.test_cmd
+    let cmd = 'cd '.s:acc_gettask().'/ && '.test_cmd
     cal s:async_ac_win(cmd)
     let s:ac_test_timer_id = timer_start(200, {tid -> s:ac_test_timer(tid)}, #{repeat: 10})
 endf
@@ -161,11 +157,16 @@ fu! s:ac_test_timer(tid) abort
     endfor
 endf
 
-fu! s:set_url() abort
+fu! s:dl_test() abort
     exe 'hi PmenuSel '.join(s:pmenu_default, ' ')
     cal popup_close(s:ac_menu_pid)
-    let g:contest_url = input('>')
-    cal popup_notification([g:contest_url], #{line: 1})
+    let g:contest_url = input('input URL>')
+    let ctask = s:acc_gettask()
+    if !glob('./'.ctask.'/test')->empty()
+        cal system('cd '.ctask.'/ && rm -rf test')
+    endif
+    cal system('cd '.ctask.'/ && oj d '.g:contest_url)
+    cal popup_notification(['DL Test Data By', g:contest_url], #{line: 1})
 endf
 
 " ############################################################################
