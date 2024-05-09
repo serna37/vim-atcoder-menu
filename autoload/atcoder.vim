@@ -142,7 +142,7 @@ endf
 let g:contest_url = ""
 let s:ac_test_timer_id = 0
 fu! s:ac_test() abort
-    let test_cmd = get(g:, 'ac_vim_test_cmd', 'g++ -std=c++20 -mtune=native -march=native -fconstexpr-depth=2147483647 -fconstexpr-loop-limit=2147483647 -fconstexpr-ops-limit=2147483647 -ftrapv main.cpp && oj t')
+    let test_cmd = get(g:, 'ac_vim_test_cmd', 'g++ -std=c++20 -mtune=native -march=native -ftrapv main.cpp && oj t')
     let cmd = 'cd '.s:acc_gettask().'/ && '.test_cmd
     cal s:async_ac_win(cmd)
     let s:ac_test_timer_id = timer_start(200, {tid -> s:ac_test_timer(tid)}, #{repeat: 10})
